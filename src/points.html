@@ -1,0 +1,41 @@
+<div class="fixed right-0 bottom-0 flex justify-between gap-4 mb-4 mr-4 rounded bg-stone-500 px-4">
+    <div class="flex flex-col">
+        <div class="text-red-600">
+            <input type="text" value="@game.player_one_name" class="w-20 bg-inherit"
+                   name="new_name" id="new_name"
+                   hx-post="/update_name/@game.id/1"
+                   hx-swap="innerHTML"
+                   hx-trigger="keyup changed delay:500ms"
+            />
+        </div>
+        <div id="points1">
+            @game.player_one
+        </div>
+    </div>
+    <div class="flex flex-col">
+        <div class="text-blue-700">
+            <input type="text" value="@game.player_two_name" class="w-20 bg-inherit"
+                   name="new_name" id="new_name"
+                   hx-post="/update_name/@game.id/2"
+                   hx-swap="innerHTML"
+                   hx-trigger="keyup changed delay:500ms"
+            />
+        </div>
+        <div id="points2">
+            @game.player_two
+        </div>
+    </div>
+    <div class="flex flex-col">
+        <div class="text-yellow-500">
+            <input type="text" value="@game.player_three_name" class="w-20 bg-inherit"
+                   name="new_name" id="new_name"
+                   hx-post="/update_name/@game.id/3"
+                   hx-swap="innerHTML"
+                   hx-trigger="keyup changed delay:500ms"
+            />
+        </div>
+        <div id="points3">
+            @game.player_three
+        </div>
+    </div>
+</div>

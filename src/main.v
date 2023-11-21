@@ -24,12 +24,18 @@ struct Column_Title {
 }
 
 struct Game {
-	id         int            @[primary; sql: serial]
-	title      string
-	uuid       string         @[unique]
-	col_titles []Column_Title @[fkey: 'game_id']
-	nr_rows    int
-	questions  []Question     @[fkey: 'game_id']
+	id                int            @[primary; sql: serial]
+	title             string
+	uuid              string         @[unique]
+	password          string
+	col_titles        []Column_Title @[fkey: 'game_id']
+	questions         []Question     @[fkey: 'game_id']
+	player_one_name   string
+	player_one        int
+	player_two_name   string
+	player_two        int
+	player_three_name string
+	player_three      int
 }
 
 fn main() {
@@ -56,7 +62,6 @@ fn main() {
 		}, Column_Title{
 			col_title: 'Column 5'
 		}]
-		nr_rows: 5
 		questions: [
 			Question{
 				question: 'This is the current year.'
@@ -159,6 +164,12 @@ fn main() {
 				answer: 'Who is Leonardo da Vinci?'
 			},
 		]
+		player_one: 0
+		player_one_name: 'Player 1'
+		player_two_name: 'Player 2'
+		player_two: 0
+		player_three_name: 'Player 3'
+		player_three: 0
 	}
 
 	sql app.db {
@@ -170,7 +181,7 @@ fn main() {
 	vweb.run(app, 8080)
 }
 
-@['/game/:id']
+@['/game/:uuid']
 pub fn (mut app App) game(uuid string) !vweb.Result {
 	games := sql app.db {
 		select from Game where uuid == uuid limit 1
@@ -181,10 +192,22 @@ pub fn (mut app App) game(uuid string) !vweb.Result {
 
 @['/question/:id']
 pub fn (mut app App) question(id int) !vweb.Result {
-	questions := sql app.db {
-		select from Question where id == id limit 1
-	}!
-	question := questions[0] or { return app.not_found() }
+	rows := app.db.exec_param('SELECT * FROM Game JOIN Question ON Game.id = Question.game_id WHERE Question.id = ?',
+		id.str()) or { panic(err) }
+	if rows.len == 0 {
+		return app.not_found()
+	}
+	question := Question{
+		id: rows[0].vals[10].int()
+		question: rows[0].vals[12]
+		answer: rows[0].vals[13]
+	}
+	game := Game{
+		id: rows[0].vals[0].int()
+		player_one_name: rows[0].vals[4]
+		player_two_name: rows[0].vals[6]
+		player_three_name: rows[0].vals[8]
+	}
 	return $vweb.html()
 }
 
@@ -203,8 +226,10 @@ pub fn (mut app App) edit(uuid string) !vweb.Result {
 		new_game := Game{
 			uuid: uuid
 			col_titles: []Column_Title{len: 5}
-			nr_rows: 5
 			questions: []Question{len: 25}
+			player_one_name: 'Player 1'
+			player_two_name: 'Player 2'
+			player_three_name: 'Player 3'
 		}
 		sql app.db {
 			insert new_game into Game
@@ -230,6 +255,13 @@ pub fn (mut app App) update_title(id int) !vweb.Result {
 
 @['/edit_question/:id'; get]
 pub fn (mut app App) editquestion(id int) !vweb.Result {
+	questions := sql app.db {
+		select from Question where id == id limit 1
+	}!
+	if questions.len == 0 {
+		return app.text('')
+	}
+	question := questions[0]
 	return $vweb.html()
 }
 
@@ -250,4 +282,71 @@ pub fn (mut app App) update_game_title(id int) !vweb.Result {
 		update Game set title = title where id == id
 	}!
 	return app.text(title)
+}
+
+@['/update_name/:id/:player'; post]
+pub fn (mut app App) update_name(id int, player int) !vweb.Result {
+	new_name := app.form['new_name'] or { return app.text('') }
+	match player {
+		1 {
+			sql app.db {
+				update Game set player_one_name = new_name where id == id
+			}!
+		}
+		2 {
+			sql app.db {
+				update Game set player_two_name = new_name where id == id
+			}!
+		}
+		3 {
+			sql app.db {
+				update Game set player_three_name = new_name where id == id
+			}!
+		}
+		else {
+			return app.text('')
+		}
+	}
+
+	return app.text(new_name)
+}
+
+@['/add_points/:id/:player'; post]
+pub fn (mut app App) addpoints(id int, player int) !vweb.Result {
+	games := sql app.db {
+		select from Game where id == id limit 1
+	}!
+	if games.len == 0 {
+		return app.not_found()
+	}
+	game := games[0]
+
+	question_id := app.form['question_id'] or { return app.not_found() }
+	println(question_id)
+	index := question_id.int() - game.questions[0].id
+	mut points := ((index / 5) + 1) * 100
+	match player {
+		1 {
+			points += game.player_one
+			sql app.db {
+				update Game set player_one = points where id == id
+			}!
+		}
+		2 {
+			points += game.player_two
+			sql app.db {
+				update Game set player_two = points where id == id
+			}!
+		}
+		3 {
+			points += game.player_three
+			sql app.db {
+				update Game set player_three = points where id == id
+			}!
+		}
+		else {
+			return app.text('')
+		}
+	}
+	return $vweb.html()
 }
