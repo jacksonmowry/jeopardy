@@ -181,6 +181,12 @@ fn main() {
 	vweb.run(app, 8080)
 }
 
+@['/']
+pub fn (mut app App) index() !vweb.Result {
+	uuid := rand.uuid_v4()
+	return $vweb.html()
+}
+
 @['/game/:uuid']
 pub fn (mut app App) game(uuid string) !vweb.Result {
 	games := sql app.db {
@@ -218,6 +224,8 @@ pub fn (mut app App) close() !vweb.Result {
 
 @['/edit/:uuid']
 pub fn (mut app App) edit(uuid string) !vweb.Result {
+	game_title := app.form['title'] or { '' }
+	println(game_title)
 	games := sql app.db {
 		select from Game where uuid == uuid
 	}!
@@ -225,6 +233,7 @@ pub fn (mut app App) edit(uuid string) !vweb.Result {
 	if games.len == 0 {
 		new_game := Game{
 			uuid: uuid
+			title: game_title
 			col_titles: []Column_Title{len: 5}
 			questions: []Question{len: 25}
 			player_one_name: 'Player 1'
@@ -322,7 +331,6 @@ pub fn (mut app App) addpoints(id int, player int) !vweb.Result {
 	game := games[0]
 
 	question_id := app.form['question_id'] or { return app.not_found() }
-	println(question_id)
 	index := question_id.int() - game.questions[0].id
 	mut points := ((index / 5) + 1) * 100
 	match player {

@@ -5,20 +5,21 @@
             <div class="flex gap-4 justify-between items-center">
                 <input name="question_id" type="hidden" value="@question.id" />
                 <button hx-post="/add_points/@game.id/1" class="bg-red-600 rounded shadow px-4 py-2"
-                        type="submit" hx-include="previous input">
+                        type="submit" hx-include="previous input" hx-trigger="click, keyup[key=='1'] from:body">
                     @game.player_one_name
                 </button>
                 <button hx-post="/add_points/@game.id/2" class="bg-blue-500 rounded shadow px-4 py-2"
-                        type="submit" hx-include="previous input">
+                        type="submit" hx-include="previous input" hx-trigger="click, keyup[key=='2'] from:body">
                     @game.player_two_name
                 </button>
                 <button hx-post="/add_points/@game.id/3" class="bg-yellow-400 rounded shadow px-4 py-2"
-                        type="submit" hx-include="previous input">
+                        type="submit" hx-include="previous input" hx-trigger="click, keyup[key=='3'] from:body">
                     @game.player_three_name
                 </button>
             </div>
             <div class="flex gap-4 justify-between items-center">
-                <button hx-post="/close" class="float-right cursor-pointer">
+                <button hx-post="/close" class="float-right cursor-pointer"
+                        hx-trigger="click, keyup[key=='Escape'] from:body">
                     <svg class="stroke-2 fill-red-700 stroke-red-700" width="24" height="24" viewBox="0 0 24 24" fill="none"
                          xmlns="http://www.w3.org/2000/svg">
                         <path fill-rule="evenodd" clip-rule="evenodd"

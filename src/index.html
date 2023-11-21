@@ -1,0 +1,29 @@
+<!doctype html>
+<html class="no-js" lang="">
+  <head>
+    @js '/htmx.min.js'
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title>Jeopardy: Create A Game</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/output.css" type="text/css" media="screen" />
+
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  </head>
+  <body class="overflow-hidden bg-stone-600">
+    <div class="flex flex-col h-screen w-full items-center justify-start bg-stone-600 gap-4 p-4">
+      <img src="https://imgur.com/ESmTjjM.jpg" class="aspect-square w-64 h-64"/>
+      <div class="w-1/2 h-1/2 rounded bg-inherit flex items-center
+                  justify-center p-4 flex-col gap-4">
+        <input type="text" placeholder="Enter a title..."
+               class="bg-inherit text-4xl" name="title" id="title">
+        <button type="submit" class="bg-white rounded px-4 py-2"
+                hx-post="/edit/@uuid" hx-include="previous input">
+          Lets Go!
+        </button>
+      </div>
+    </div>
+  </body>
+</html>
